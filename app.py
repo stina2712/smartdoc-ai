@@ -5,9 +5,9 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_community.llms import HuggingFaceHub
-from langchain.chains.retrieval import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
 
 # --- Streamlit UI Setup ---
 st.set_page_config(page_title="SmartDoc AI", page_icon="🤖", layout="wide")
@@ -59,21 +59,29 @@ else:
             model_kwargs={"temperature": 0.5, "max_length": 512}
         )
 
-        # --- Standardized Retrieval-Augmented Generation Chain Configuration ---
-        system_prompt = (
-            "You are an intelligent assistant trained to answer questions based strictly on the provided context.\n"
-            "If the answer cannot be found in the context documents, explicitly state that you don't know.\n\n"
-            "Context documents:\n{context}"
-        )
-        
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", system_prompt),
-            ("human", "{input}"),
-        ])
+        # --- Standardized LCEL RAG Chain Configuration ---
+        # Helper function to format documents for the prompt context
+        def format_docs(docs):
+            return "\n\n".join(doc.page_content for doc in docs)
 
-        # Combine document processing steps with the model and the layout guidelines
-        question_answer_chain = create_stuff_documents_chain(llm, prompt)
-        rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+        template = """You are an intelligent assistant trained to answer questions based strictly on the provided context.
+If the answer cannot be found in the context documents, explicitly state that you don't know.
+
+Context documents:
+{context}
+
+Question: {question}
+Answer:"""
+        
+        prompt = ChatPromptTemplate.from_template(template)
+
+        # Constructing the RAG chain using explicit pipe operators (|)
+        rag_chain = (
+            {"context": retriever | format_docs, "question": RunnablePassthrough()}
+            | prompt
+            | llm
+            | StrOutputParser()
+        )
 
         # --- User Interaction Panel ---
         st.write("---")
@@ -81,9 +89,9 @@ else:
 
         if user_query:
             with st.spinner("Analyzing document context and drafting response..."):
-                # Run the complete search-and-generation cycle
-                response = rag_chain.invoke({"input": user_query})
+                # Run the search-and-generation cycle
+                response = rag_chain.invoke(user_query)
                 
                 # Render output directly on dashboard
                 st.subheader("Answer:")
-                st.write(response["answer"])
+                st.write(response)
