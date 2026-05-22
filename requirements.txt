@@ -1,6 +1,6 @@
 streamlit
 pypdf
-chromadb
+faiss-cpu
 huggingface_hub
 langchain
 langchain-community
