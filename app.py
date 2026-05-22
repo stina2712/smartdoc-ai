@@ -53,7 +53,7 @@ else:
             
             status.update(label="✅ Text indexed into vector database. Model ready.", state="complete")
 
-        # --- Initialize LLM Model ---
+       # --- Initialize LLM Model ---
         llm = HuggingFaceHub(
             repo_id="mistralai/Mistral-7B-Instruct-v0.2",
             model_kwargs={"temperature": 0.5, "max_length": 512}
@@ -86,10 +86,10 @@ Answer:"""
         st.write("---")
         user_query = st.text_input("💬 Ask a question about your uploaded document:")
 
-       if user_query:
-    with st.spinner("Analyzing document context and drafting response..."):
-        # Run the search-and-generation cycle
-        response = rag_chain.invoke({"question": user_query})
+        if user_query:
+            with st.spinner("Analyzing document context and drafting response..."):
+                # Run the search-and-generation cycle with a proper dictionary input
+                response = rag_chain.invoke({"question": user_query})
                 
                 # Render output directly on dashboard
                 st.subheader("Answer:")
