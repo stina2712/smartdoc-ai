@@ -74,10 +74,12 @@ Answer:"""
         
         prompt = ChatPromptTemplate.from_template(template)
 
-        # Constructing the RAG chain using explicit pipe operators (|)
+        # Constructing the RAG chain
+        # Added lambda x: x.to_string() to guarantee HuggingFaceHub receives standard text string
         rag_chain = (
             {"context": retriever | format_docs, "question": RunnablePassthrough()}
             | prompt
+            | (lambda x: x.to_string())
             | llm
             | StrOutputParser()
         )
