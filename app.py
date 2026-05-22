@@ -86,10 +86,10 @@ Answer:"""
         st.write("---")
         user_query = st.text_input("💬 Ask a question about your uploaded document:")
 
-        if user_query:
-            with st.spinner("Analyzing document context and drafting response..."):
-                # Run the search-and-generation cycle
-                response = rag_chain.invoke(user_query)
+       if user_query:
+    with st.spinner("Analyzing document context and drafting response..."):
+        # Run the search-and-generation cycle
+        response = rag_chain.invoke({"question": user_query})
                 
                 # Render output directly on dashboard
                 st.subheader("Answer:")
