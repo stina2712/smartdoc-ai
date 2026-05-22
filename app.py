@@ -53,7 +53,7 @@ else:
             
             status.update(label="✅ Text indexed into vector database. Model ready.", state="complete")
 
-       # --- Initialize LLM Model ---
+        # --- Initialize LLM Model ---
         llm = HuggingFaceHub(
             repo_id="mistralai/Mistral-7B-Instruct-v0.2",
             model_kwargs={"temperature": 0.5, "max_length": 512}
