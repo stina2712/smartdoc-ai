@@ -3,7 +3,7 @@ import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import FAISS
 from langchain_community.llms import HuggingFaceHub
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
@@ -47,8 +47,8 @@ else:
             # 3. Download embedding model from Hugging Face
             embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
             
-            # 4. Ingest embeddings into a localized Chroma DB instance
-            vectorstore = Chroma.from_documents(final_documents, embeddings)
+            # 4. Ingest embeddings into a localized FAISS instance
+            vectorstore = FAISS.from_documents(final_documents, embeddings)
             retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
             
             status.update(label="✅ Text indexed into vector database. Model ready.", state="complete")
@@ -60,7 +60,6 @@ else:
         )
 
         # --- Standardized LCEL RAG Chain Configuration ---
-        # Helper function to format documents for the prompt context
         def format_docs(docs):
             return "\n\n".join(doc.page_content for doc in docs)
 
